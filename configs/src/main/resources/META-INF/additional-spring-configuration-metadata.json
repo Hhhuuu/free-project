@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "logger.logHeaders",
+      "type": "java.lang.Boolean",
+      "description": "Разрешено ли логирование заголовков запросов."
+    },
+    {
+      "name": "logger.logRequest",
+      "type": "java.lang.Boolean",
+      "description": "Разрешено ли логирование запросов."
+    },
+    {
+      "name": "logger.maxBodyLength",
+      "type": "java.lang.Long",
+      "description": "Максимальный размер для вывода в лог."
+    }
+  ]
+}
