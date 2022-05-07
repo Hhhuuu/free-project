@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
+    <changeSet id="001-1" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USERS"/>
+            </not>
+        </preConditions>
+        <createTable tableName="USERS">
+            <column name="ID" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nickname" type="VARCHAR2(70)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="email" type="VARCHAR2(170)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR2(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            insert into USERS(id, nickname, email, password) values (nextval('users_id_seq'), 'admin', 'admin@mail.ru',
+            '$2a$10$2PoDRowvFk8LfBHbXI6kUO.Dpx06M4c1GlS079zbKDHi5upElcqOi');
+        </sql>
+        <rollback>
+            <dropTable tableName="USERS"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-2" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="inx_user_email"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="inx_user_email" tableName="USERS">
+            <column name="email"/>
+        </createIndex>
+        <rollback>
+            <dropIndex indexName="inx_user_email" tableName="USERS"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-3" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ROLES"/>
+            </not>
+        </preConditions>
+        <createTable tableName="ROLES">
+            <column name="ID" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR2(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <sql>
+            insert into ROLES(id, name) values (nextval('roles_id_seq'), 'ADMIN');
+            insert into ROLES(id, name) values (nextval('roles_id_seq'), 'USER');
+            insert into ROLES(id, name) values (nextval('roles_id_seq'), 'MANAGER');
+            insert into ROLES(id, name) values (nextval('roles_id_seq'), 'ANONYMOUS');
+        </sql>
+        <rollback>
+            <dropTable tableName="ROLES"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-4" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="USERS_ROLES"/>
+            </not>
+        </preConditions>
+        <sql>
+            create table USERS_ROLES
+            (
+                USER_ID BIGINT not null,
+                ROLE_ID BIGINT not null,
+                primary key (USER_ID, ROLE_ID),
+                constraint fk_roles_users foreign key (USER_ID) references USERS (id),
+                constraint fk_users_roles foreign key (ROLE_ID) references ROLES (id)
+            );
+
+            insert into USERS_ROLES(user_id, role_id) with u AS (
+                SELECT id
+                FROM USERS
+                WHERE nickname='admin'
+            ),
+            r AS (
+                SELECT id
+                FROM ROLES
+                WHERE name='ADMIN'
+            )
+            select u.id, r.id from u, r;
+        </sql>
+        <rollback>
+            <dropTable tableName="USERS_ROLES"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-5" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="idx_users_roles_user_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="idx_users_roles_user_id" tableName="USERS_ROLES">
+            <column name="user_id"/>
+        </createIndex>
+        <rollback>
+            <dropIndex indexName="idx_users_roles_user_id" tableName="USERS_ROLES"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

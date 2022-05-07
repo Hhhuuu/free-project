@@ -1,6 +1,8 @@
 package ru.free.project;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,7 +23,7 @@ import ru.free.project.handlers.*;
 public class SecurityJavaConfig extends WebSecurityConfigurerAdapter {
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    //    private final DaoAuthenticationProvider daoAuthenticationProvider;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final CustomUrlAuthenticationSuccessHandler customSuccessHandler;
     private final CustomUrlAuthenticationFailureHandler customFailureHandler;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
@@ -29,12 +31,12 @@ public class SecurityJavaConfig extends WebSecurityConfigurerAdapter {
 
     public SecurityJavaConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint,
                               CustomUrlAuthenticationSuccessHandler customSuccessHandler,
-//                              @Qualifier("daoAuthenticationProvider") DaoAuthenticationProvider daoAuthenticationProvider,
+                              @Qualifier("daoAuthenticationProvider") DaoAuthenticationProvider daoAuthenticationProvider,
                               CustomUrlAuthenticationFailureHandler customFailureHandler,
                               CustomLogoutSuccessHandler customLogoutSuccessHandler,
                               CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
-//        this.daoAuthenticationProvider = daoAuthenticationProvider;
+        this.daoAuthenticationProvider = daoAuthenticationProvider;
         this.customSuccessHandler = customSuccessHandler;
         this.customFailureHandler = customFailureHandler;
         this.customLogoutSuccessHandler = customLogoutSuccessHandler;
@@ -43,11 +45,7 @@ public class SecurityJavaConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth.authenticationProvider(daoAuthenticationProvider);
-        auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password(encoder().encode("adminPass"))
-                .roles("ADMIN");
+        auth.authenticationProvider(daoAuthenticationProvider);
     }
 
     @Bean

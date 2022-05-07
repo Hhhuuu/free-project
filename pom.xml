@@ -40,6 +40,9 @@
         <commons-collections4.version>4.0</commons-collections4.version>
 
         <active.profile>dev</active.profile>
+
+        <db.username>postgres</db.username>
+        <db.password></db.password>
     </properties>
 
     <dependencies>

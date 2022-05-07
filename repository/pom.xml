@@ -11,5 +11,47 @@
 
     <artifactId>repository</artifactId>
 
+    <properties>
+        <datasource.host>localhost</datasource.host>
+        <datasource.port>5432</datasource.port>
+        <datasource.db>free_project</datasource.db>
+        <db.schema>public</db.schema>
+        <logging>INFO</logging>
+        <verbose>true</verbose>
+    </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <configuration>
+                    <changeLogFile>${project.basedir}/src/main/resources/db/changelog/changelog-master.xml</changeLogFile>
+                    <url>jdbc:postgresql://${datasource.host}:${datasource.port}/${datasource.db}</url>
+                    <username>${db.username}</username>
+                    <password>${db.password}</password>
+                    <verbose>${verbose}</verbose>
+                    <logging>${logging}</logging>
+                    <schemas>${db.schema}</schemas>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

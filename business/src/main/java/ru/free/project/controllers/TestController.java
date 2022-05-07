@@ -1,6 +1,5 @@
 package ru.free.project.controllers;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.free.project.*;
@@ -27,7 +26,7 @@ public class TestController {
     public TextDto sayHello() throws CommonException {
         TextDto textDto = new TextDto();
         textDto.setTitle(testService.getSomeMethod());
-        textDto.setDescription("Text say: " + securityContext.getAuthentication().getName());
+        textDto.setDescription("Text say: " + securityContext.getUser().getNickname());
         return textDto;
     }
 
