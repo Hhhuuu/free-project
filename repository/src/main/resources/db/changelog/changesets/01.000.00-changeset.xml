@@ -25,8 +25,9 @@
             </column>
         </createTable>
         <sql>
-            insert into USERS(id, nickname, email, password) values (nextval('users_id_seq'), 'admin', 'admin@mail.ru',
-            '$2a$10$2PoDRowvFk8LfBHbXI6kUO.Dpx06M4c1GlS079zbKDHi5upElcqOi');
+            <![CDATA[
+            insert into USERS(id, nickname, email, password) values (nextval('users_id_seq'), 'admin', 'admin@mail.ru', '$2a$10$2PoDRowvFk8LfBHbXI6kUO.Dpx06M4c1GlS079zbKDHi5upElcqOi');
+            ]]>
         </sql>
         <rollback>
             <dropTable tableName="USERS"/>
@@ -76,6 +77,7 @@
             </not>
         </preConditions>
         <sql>
+            <![CDATA[
             create table USERS_ROLES
             (
                 USER_ID BIGINT not null,
@@ -96,6 +98,7 @@
                 WHERE name='ADMIN'
             )
             select u.id, r.id from u, r;
+            ]]>
         </sql>
         <rollback>
             <dropTable tableName="USERS_ROLES"/>
@@ -112,6 +115,90 @@
         </createIndex>
         <rollback>
             <dropIndex indexName="idx_users_roles_user_id" tableName="USERS_ROLES"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-6" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="SPRING_SESSION"/>
+            </not>
+        </preConditions>
+        <sql>
+            <![CDATA[
+            CREATE TABLE SPRING_SESSION (
+                PRIMARY_ID CHAR(36) NOT NULL,
+                SESSION_ID CHAR(36) NOT NULL,
+                CREATION_TIME BIGINT NOT NULL,
+                LAST_ACCESS_TIME BIGINT NOT NULL,
+                MAX_INACTIVE_INTERVAL INT NOT NULL,
+                EXPIRY_TIME BIGINT NOT NULL,
+                PRINCIPAL_NAME VARCHAR(150),
+                CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID)
+            );
+            ]]>
+        </sql>
+        <rollback>
+            <dropTable tableName="SPRING_SESSION"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-7" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="spring_session_ix1"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE UNIQUE INDEX spring_session_ix1 ON SPRING_SESSION (SESSION_ID);
+        </sql>
+        <rollback>
+            <dropIndex indexName="spring_session_ix1" tableName="SPRING_SESSION"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-8" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="spring_session_ix2"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX spring_session_ix2 ON SPRING_SESSION (EXPIRY_TIME);
+        </sql>
+        <rollback>
+            <dropIndex indexName="spring_session_ix2" tableName="SPRING_SESSION"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-9" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="spring_session_ix3"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX spring_session_ix3 ON SPRING_SESSION (PRINCIPAL_NAME);
+        </sql>
+        <rollback>
+            <dropIndex indexName="spring_session_ix3" tableName="SPRING_SESSION"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="001-10" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="SPRING_SESSION_ATTRIBUTES"/>
+            </not>
+        </preConditions>
+        <sql>
+            <![CDATA[
+            CREATE TABLE SPRING_SESSION_ATTRIBUTES (
+                SESSION_PRIMARY_ID CHAR(36) NOT NULL,
+                ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
+                ATTRIBUTE_BYTES BYTEA NOT NULL,
+                CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
+                CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE
+            );
+            ]]>
+        </sql>
+        <rollback>
+            <dropTable tableName="SPRING_SESSION_ATTRIBUTES"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>
