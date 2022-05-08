@@ -1,5 +1,6 @@
 package ru.free.project.handlers;
 
+ import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,14 @@ public class CustomUrlAuthenticationFailureHandler extends SimpleUrlAuthenticati
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        setFailResponse(response, exception, "Введен некорректный логин или пароль.");
+        if (LockedException.class.isAssignableFrom(exception.getClass())) {
+            setFailResponse(response, exception, "Извините, аккаунт заблокирован");
+        } else if (DisabledException.class.isAssignableFrom(exception.getClass())) {
+            setFailResponse(response, exception, "Извините, аккаунт отключен");
+        } else if (AccountExpiredException.class.isAssignableFrom(exception.getClass())) {
+            setFailResponse(response, exception, "Извините, у аккаунта истекло время действия");
+        } else {
+            setFailResponse(response, exception, "Введен некорректный логин или пароль.");
+        }
     }
 }
