@@ -1,18 +1,20 @@
 package ru.free.project;
 
-import com.google.common.cache.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
 import ru.free.project.exceptions.CommonException;
 import ru.free.project.exceptions.CommonRuntimeException;
 import ru.free.project.users.*;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
 
 /**
  * @author Popov Maxim <m_amapapa@mail.ru>
@@ -55,15 +57,28 @@ public class SecurityContextConfiguration {
         };
 
         private static final String ANONYMOUS_USER = "anonymousUser";
-        private final Cache<String, UserData> users;
         private final UserManagerService userManagerService;
+        private final UserCacheProperties userCacheProperties;
+        private Cache<String, UserData> users;
+        
 
-        public SecurityContextImpl(UserManagerService userManagerService) {
-            this.users = CacheBuilder.newBuilder()
-                    .expireAfterWrite(10L, TimeUnit.MINUTES)
-                    .maximumSize(10000L)
-                    .build();
+        public SecurityContextImpl(UserManagerService userManagerService,
+                                   UserCacheProperties userCacheProperties) {
+            if (userCacheProperties.isEnabled()) {
+                initializeCache(userCacheProperties);
+            }
             this.userManagerService = userManagerService;
+            this.userCacheProperties = userCacheProperties;
+        }
+
+        private void initializeCache(UserCacheProperties userCacheProperties) {
+            Assert.isTrue(userCacheProperties.getMaxSize() > 0, "Максимальный размер кэша должен быть больше 0");
+            Assert.isTrue(Objects.nonNull(userCacheProperties.getExpireAfterWrite()) && !userCacheProperties.getExpireAfterWrite().isZero() && !userCacheProperties.getExpireAfterWrite().isNegative(), "Время жизни не должно быть отрицательным");
+
+            this.users = CacheBuilder.newBuilder()
+                    .expireAfterWrite(userCacheProperties.getExpireAfterWrite())
+                    .maximumSize(userCacheProperties.getMaxSize())
+                    .build();
         }
 
         @Override
@@ -71,11 +86,19 @@ public class SecurityContextConfiguration {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             try {
                 UserKeyHolder userKey = getUserKey(authentication);
-                return users.get(userKey.formatToString(), () -> getUser(userKey));
+                return getUserData(userKey);
             } catch (Exception e) {
                 log.error("Проблема при получении данных о пользователе", e);
                 throw new CommonException("Не удалось получить информацию о пользователе", e);
             }
+        }
+
+        private UserData getUserData(UserKeyHolder userKey) throws Exception {
+            Callable<UserData> userDataCallable = () -> getUser(userKey);
+            if (!userCacheProperties.isEnabled()) {
+                return userDataCallable.call();
+            }
+            return users.get(userKey.formatToString(), userDataCallable);
         }
 
         private UserKeyHolder getUserKey(Authentication authentication) {
@@ -90,6 +113,11 @@ public class SecurityContextConfiguration {
 
         @Override
         public void putIfNotPresent(UserData userData) {
+            if (!userCacheProperties.isEnabled()) {
+                log.warn("Кэш пользователей выключен");
+                return;
+            }
+
             if (userData.isAnonymous()) {
                 return;
             }
@@ -112,7 +140,8 @@ public class SecurityContextConfiguration {
     }
 
     @Bean
-    public SecurityContext securityContext(UserManagerService userManagerService) {
-        return new SecurityContextImpl(userManagerService);
+    public SecurityContext securityContext(UserManagerService userManagerService,
+                                           UserCacheProperties userCacheProperties) {
+        return new SecurityContextImpl(userManagerService, userCacheProperties);
     }
 }
