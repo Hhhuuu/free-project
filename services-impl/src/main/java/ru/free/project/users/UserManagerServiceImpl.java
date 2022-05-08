@@ -2,6 +2,7 @@ package ru.free.project.users;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.free.project.*;
 import ru.free.project.exceptions.CommonException;
 
@@ -26,6 +27,7 @@ public class UserManagerServiceImpl implements UserManagerService {
         this.roleRepository = roleRepository;
     }
 
+    @Transactional
     @Override
     public Optional<UserData> getUserById(Long id) throws CommonException {
         if (Objects.isNull(id) || id <= 0) {
@@ -40,7 +42,7 @@ public class UserManagerServiceImpl implements UserManagerService {
         return buildUserData(userData.get());
     }
 
-    // TODO должен быть transactional и другие тоже
+    @Transactional
     @Override
     public Optional<UserData> getUserByNickname(String nickname) throws CommonException {
         if (StringUtils.isBlank(nickname)) {
@@ -56,6 +58,7 @@ public class UserManagerServiceImpl implements UserManagerService {
 
     }
 
+    @Transactional
     @Override
     public Optional<UserData> getUserByEmail(String email) throws CommonException {
         if (StringUtils.isBlank(email)) {
