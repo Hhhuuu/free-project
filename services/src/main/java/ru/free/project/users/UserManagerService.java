@@ -35,4 +35,13 @@ public interface UserManagerService {
      * @throws CommonException если не задан email
      */
     Optional<UserData> getUserByEmail(String email) throws CommonException;
+
+    /**
+     * Поиск пользователя по email или nickname
+     *
+     * @param username имя из авторизации
+     * @return пользователь
+     * @throws CommonException если некорректно указан username
+     */
+    Optional<UserData> findUserByUsername(String username) throws CommonException;
 }

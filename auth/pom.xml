@@ -20,6 +20,12 @@
 
         <dependency>
             <groupId>ru.free.project</groupId>
+            <artifactId>api-dto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.free.project</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>

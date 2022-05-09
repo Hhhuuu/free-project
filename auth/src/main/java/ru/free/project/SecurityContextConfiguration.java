@@ -85,30 +85,31 @@ public class SecurityContextConfiguration {
         public UserData getUser() throws CommonException {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             try {
-                UserKeyHolder userKey = getUserKey(authentication);
-                return getUserData(userKey);
+                if (isAnonymous(authentication)) {
+                    return ANONYMOUS;
+                }
+                Callable<UserData> userDataCallable = () -> getUser(authentication.getName()) ;
+                return getUserDataAndPutToCacheIfNeed(authentication.getName(), userDataCallable);
             } catch (Exception e) {
                 log.error("Проблема при получении данных о пользователе", e);
                 throw new CommonException("Не удалось получить информацию о пользователе", e);
             }
         }
 
-        private UserData getUserData(UserKeyHolder userKey) throws Exception {
-            Callable<UserData> userDataCallable = () -> getUser(userKey);
+        private boolean isAnonymous(Authentication authentication) {
+            return AnonymousAuthenticationToken.class.isAssignableFrom(authentication.getClass());
+        }
+
+        @Override
+        public boolean isAuthenticated() {
+            return !isAnonymous(SecurityContextHolder.getContext().getAuthentication());
+        }
+
+        private UserData getUserDataAndPutToCacheIfNeed(String userKey, Callable<UserData> userDataCallable) throws Exception {
             if (!userCacheProperties.isEnabled()) {
                 return userDataCallable.call();
             }
-            return users.get(userKey.formatToString(), userDataCallable);
-        }
-
-        private UserKeyHolder getUserKey(Authentication authentication) {
-            UserKeyHolder userKey;
-            if (AnonymousAuthenticationToken.class.isAssignableFrom(authentication.getClass())) {
-                userKey = UserKeyHolder.forAnonymous(((AnonymousAuthenticationToken) authentication).getKeyHash(), authentication.getName());
-            } else {
-                userKey = UserKeyHolder.parseFromString(authentication.getName());
-            }
-            return userKey;
+            return users.get(userKey, userDataCallable);
         }
 
         @Override
@@ -121,16 +122,13 @@ public class SecurityContextConfiguration {
             if (userData.isAnonymous()) {
                 return;
             }
-            users.put(UserKeyHolder.fromIdAndNickname(userData.getId(), userData.getNickname()).formatToString(), userData);
+
+            users.put(Objects.requireNonNull(userData.getNickname()), userData);
         }
 
-        private UserData getUser(UserKeyHolder userKey) {
+        private UserData getUser(String username) {
             try {
-                if (userKey.isAnonymous()) {
-                    return ANONYMOUS;
-                }
-
-                Optional<UserData> user = userManagerService.getUserById(userKey.getId());
+                Optional<UserData> user = userManagerService.findUserByUsername(username);
                 return user.orElse(ANONYMOUS);
             } catch (CommonException e) {
                 log.error("Не удалось получить информацию о пользователе", e);

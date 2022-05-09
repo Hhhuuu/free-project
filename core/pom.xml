@@ -11,5 +11,11 @@
 
     <artifactId>core</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>ru.free.project</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

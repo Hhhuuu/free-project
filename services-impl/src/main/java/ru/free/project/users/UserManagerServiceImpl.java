@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.free.project.*;
 import ru.free.project.exceptions.CommonException;
+import ru.free.project.utils.EmailUtils;
+import ru.free.project.utils.NicknameUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,7 +16,6 @@ import java.util.stream.Collectors;
  */
 @Service("userManagerServiceImpl")
 public class UserManagerServiceImpl implements UserManagerService {
-
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
@@ -71,6 +72,21 @@ public class UserManagerServiceImpl implements UserManagerService {
         }
 
         return buildUserData(userData.get());
+    }
+
+    @Override
+    public Optional<UserData> findUserByUsername(String username) throws CommonException {
+        if (StringUtils.isBlank(username)) {
+            throw new CommonException("Не задан username");
+        }
+
+        String formattedUsername = StringUtils.lowerCase(username);
+        if (NicknameUtils.isNickname(formattedUsername)) {
+            return getUserByNickname(formattedUsername);
+        } else if (EmailUtils.isEmail(formattedUsername)) {
+            return getUserByEmail(formattedUsername);
+        }
+        return Optional.empty();
     }
 
     private Optional<UserData> buildUserData(User user) {

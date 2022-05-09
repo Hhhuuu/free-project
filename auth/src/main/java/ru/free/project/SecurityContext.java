@@ -13,6 +13,11 @@ public interface SecurityContext {
     UserData getUser() throws CommonException;
 
     /**
+     * @return авторизирован ли пользователь
+     */
+    boolean isAuthenticated();
+
+    /**
      * @param userData данные о пользователе
      */
     void putIfNotPresent(UserData userData);

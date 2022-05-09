@@ -4,7 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
-    <changeSet id="001-1" author="Popov Max">
+    <changeSet id="2022.05-1" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="USERS"/>
@@ -18,7 +18,7 @@
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="email" type="VARCHAR2(170)">
-                <constraints nullable="false" unique="true"/>
+                <constraints nullable="true" unique="true"/>
             </column>
             <column name="password" type="VARCHAR2(100)">
                 <constraints nullable="false"/>
@@ -33,7 +33,7 @@
             <dropTable tableName="USERS"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-2" author="Popov Max">
+    <changeSet id="2022.05-2" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="inx_user_email"/>
@@ -46,7 +46,20 @@
             <dropIndex indexName="inx_user_email" tableName="USERS"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-3" author="Popov Max">
+    <changeSet id="2022.05-3" author="Popov Max">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="inx_user_nickname"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="inx_user_nickname" tableName="USERS">
+            <column name="nickname"/>
+        </createIndex>
+        <rollback>
+            <dropIndex indexName="inx_user_nickname" tableName="USERS"/>
+        </rollback>
+    </changeSet>
+    <changeSet id="2022.05-4" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="ROLES"/>
@@ -70,7 +83,7 @@
             <dropTable tableName="ROLES"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-4" author="Popov Max">
+    <changeSet id="2022.05-5" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="USERS_ROLES"/>
@@ -104,7 +117,7 @@
             <dropTable tableName="USERS_ROLES"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-5" author="Popov Max">
+    <changeSet id="2022.05-6" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="idx_users_roles_user_id"/>
@@ -117,7 +130,7 @@
             <dropIndex indexName="idx_users_roles_user_id" tableName="USERS_ROLES"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-6" author="Popov Max">
+    <changeSet id="2022.05-7" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="SPRING_SESSION"/>
@@ -141,7 +154,7 @@
             <dropTable tableName="SPRING_SESSION"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-7" author="Popov Max">
+    <changeSet id="2022.05-8" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="spring_session_ix1"/>
@@ -154,7 +167,7 @@
             <dropIndex indexName="spring_session_ix1" tableName="SPRING_SESSION"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-8" author="Popov Max">
+    <changeSet id="2022.05-9" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="spring_session_ix2"/>
@@ -167,7 +180,7 @@
             <dropIndex indexName="spring_session_ix2" tableName="SPRING_SESSION"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-9" author="Popov Max">
+    <changeSet id="2022.05-10" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <indexExists indexName="spring_session_ix3"/>
@@ -180,7 +193,7 @@
             <dropIndex indexName="spring_session_ix3" tableName="SPRING_SESSION"/>
         </rollback>
     </changeSet>
-    <changeSet id="001-10" author="Popov Max">
+    <changeSet id="2022.05-11" author="Popov Max">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="SPRING_SESSION_ATTRIBUTES"/>

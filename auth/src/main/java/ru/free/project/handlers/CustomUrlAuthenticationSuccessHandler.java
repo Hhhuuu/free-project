@@ -1,20 +1,20 @@
 package ru.free.project.handlers;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import ru.free.project.UserKeyHolder;
 import ru.free.project.exceptions.CommonException;
-import ru.free.project.users.UserData;
-import ru.free.project.users.UserManagerService;
+import ru.free.project.users.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Popov Maxim <m_amapapa@mail.ru>
@@ -32,8 +32,8 @@ public class CustomUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticati
 
     @Override
     public void onAuthenticationSuccess(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) throws ServletException, IOException {
-        Optional<UserData> user = getUser(authentication);
-        setGoodResponseWithBody(response, user.isPresent() ? user.get() : authentication);
+        UserProfileInfoDto user = getUser(authentication);
+        setGoodResponseWithBody(response, user);
         final SavedRequest savedRequest = requestCache.getRequest(request, response);
 
         if (savedRequest == null) {
@@ -50,13 +50,26 @@ public class CustomUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticati
         clearAuthenticationAttributes(request);
     }
 
-    private Optional<UserData> getUser(Authentication authentication) {
+    private UserProfileInfoDto getUser(Authentication authentication) {
         try {
-            UserKeyHolder holder = UserKeyHolder.parseFromString(authentication.getName());
-            return userManagerService.getUserById(holder.getId());
-        } catch (CommonException e) {
-            return Optional.empty();
+            Optional<UserData> user = userManagerService.findUserByUsername(authentication.getName());
+            if (user.isPresent()) {
+                UserData userData = user.get();
+                return UserProfileInfoDto.builder()
+                        .id(userData.getId())
+                        .nickname(userData.getNickname())
+                        .email(userData.getEmail())
+                        .roles(userData.getRoles().stream().map(UserRole::getName).collect(Collectors.toList()))
+                        .build();
+            }
+        } catch (CommonException ignore) {
         }
+        return UserProfileInfoDto.builder()
+                .id(null)
+                .nickname(authentication.getName())
+                .email(null)
+                .roles(authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                .build();
     }
 
     public void setRequestCache(final RequestCache requestCache) {
