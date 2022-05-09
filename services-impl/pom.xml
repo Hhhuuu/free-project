@@ -15,21 +15,18 @@
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>services</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>repository</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>core</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

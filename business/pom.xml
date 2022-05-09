@@ -16,39 +16,51 @@
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>configs</artifactId>
-            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>core</artifactId>
-            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>auth</artifactId>
-            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>api-dto</artifactId>
-            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>services</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>ru.free.project</groupId>
             <artifactId>services-impl</artifactId>
-            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>ru.free.project.FreeProjectApplication</mainClass>
+                    <outputDirectory>${project.basedir}/../</outputDirectory>
+                    <finalName>${application.name}</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
