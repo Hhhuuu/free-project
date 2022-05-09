@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.free.project.AuthenticationAfterRegistration;
 import ru.free.project.SecurityContext;
 import ru.free.project.exceptions.BusinessException;
+import ru.free.project.exceptions.CommonException;
 import ru.free.project.users.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,13 +24,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class UserController {
 
     private final UserRegistrationService userRegistrationService;
+    private final UserManagerService userManagerService;
     private final AuthenticationAfterRegistration authenticationAfterRegistration;
     private final SecurityContext securityContext;
 
     public UserController(UserRegistrationService userRegistrationService,
+                          UserManagerService userManagerService,
                           AuthenticationAfterRegistration authenticationAfterRegistration,
                           SecurityContext securityContext) {
         this.userRegistrationService = userRegistrationService;
+        this.userManagerService = userManagerService;
         this.authenticationAfterRegistration = authenticationAfterRegistration;
         this.securityContext = securityContext;
     }
@@ -40,9 +44,7 @@ public class UserController {
             throw new BusinessException("Необходимо выйти из текущего пользователя", "Для создания нового пользователя необходимо сначала выйти из профиля");
         }
 
-        if (!StringUtils.equals(userRegistrationRq.getPassword(), userRegistrationRq.getRepeatPassword())) {
-            throw new BusinessException("Пароли не совпадают", "Введенные пароли не совпадают");
-        }
+        checkPassword(userRegistrationRq.getPassword(), userRegistrationRq.getRepeatPassword());
 
         UserRegistrationData userRegistrationData = new UserRegistrationData() {
             @Override
@@ -71,4 +73,34 @@ public class UserController {
                 .roles(userData.getRoles().stream().map(UserRole::getName).collect(Collectors.toList()))
                 .build();
     }
+
+    @PutMapping("/changingPassword")
+    public void changePassword(@RequestBody(required = true) ChangingPasswordRq changingPasswordRq) throws CommonException {
+        checkPassword(changingPasswordRq.getPassword(), changingPasswordRq.getRepeatPassword());
+
+        UserData user = securityContext.getUser();
+        if (user.isAnonymous()) {
+            throw new CommonException("Нельзя заменить пароль у анонимного пользователя");
+        }
+
+        ChangingPasswordData changingPasswordData = new ChangingPasswordData() {
+            @Override
+            public String getCurrentPassword() {
+                return changingPasswordRq.getOldPassword();
+            }
+
+            @Override
+            public String getNewPassword() {
+                return changingPasswordRq.getPassword();
+            }
+        };
+        userManagerService.changePassword(user, changingPasswordData);
+    }
+
+    private void checkPassword(String password, String repeatPassword) throws BusinessException {
+        if (!StringUtils.equals(password, repeatPassword)) {
+            throw new BusinessException("Пароли не совпадают", "Введенные пароли не совпадают");
+        }
+    }
+
 }

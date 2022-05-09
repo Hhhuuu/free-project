@@ -1,5 +1,7 @@
 package ru.free.project;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,4 +28,14 @@ public interface UserRepository extends CrudRepository<User, Long> {
      * @return пользователь
      */
     Optional<User> getUserByNickname(@Param("nickname") String nickname);
+
+    /**
+     * Изменение пароля пользователя
+     *
+     * @param userId   идентификатор пользователя
+     * @param password новый пароль, зашифрованный
+     */
+    @Modifying
+    @Query("update User user set user.password = :password where user.id = :userId")
+    void changeUserPassword(@Param("userId") Long userId, @Param("password") String password);
 }

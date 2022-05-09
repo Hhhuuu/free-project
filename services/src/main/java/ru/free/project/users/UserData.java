@@ -1,6 +1,5 @@
 package ru.free.project.users;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NonNull;
 
 import java.util.List;
@@ -34,7 +33,6 @@ public interface UserData {
     /**
      * @return пароль
      */
-    @JsonIgnore
     String getPassword();
 
     /**

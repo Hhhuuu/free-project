@@ -9,10 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.free.project.*;
 import ru.free.project.exceptions.BusinessException;
 import ru.free.project.exceptions.CommonException;
+import ru.free.project.users.utils.UserUtils;
 import ru.free.project.utils.*;
 
 import java.util.*;
 
+import static ru.free.project.users.utils.UserUtils.*;
 import static ru.free.project.utils.PasswordUtils.*;
 
 /**
@@ -39,18 +41,18 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
     @Override
     public UserData register(UserRegistrationData registrationData) throws CommonException {
         checkNickname(registrationData);
-        checkPassword(registrationData);
+        checkPassword(registrationData.getPassword());
 
         Optional<String> formattedEmail = Optional.ofNullable(StringUtils.defaultIfBlank(registrationData.getEmail(), null));
         if (formattedEmail.isPresent()) {
-            checkEmail(registrationData);
-            formattedEmail.map(String::toLowerCase);
+            checkEmail(registrationData.getEmail());
+            formattedEmail = formattedEmail.map(String::toLowerCase);
         }
 
         Role role = getDefaultRole();
 
         User user = new User();
-        user.setNickname(registrationData.getNickname());
+        user.setNickname(StringUtils.lowerCase(registrationData.getNickname()));
         formattedEmail.ifPresent(user::setEmail);
         user.setPassword(passwordEncoder.encode(registrationData.getPassword()));
         userRepository.save(user);
@@ -61,33 +63,6 @@ public class UserRegistrationServiceImpl implements UserRegistrationService {
         userRoleRepository.save(userRole);
 
         return new UserDataDto(user, Collections.singletonList(new UserRoleDto(role)));
-    }
-
-    private void checkEmail(UserRegistrationData registrationData) throws BusinessException {
-        try {
-            EmailUtils.checkEmail(registrationData.getEmail());
-        } catch (CommonException e) {
-            log.error("Email некорректный", e);
-            throw new BusinessException("Некорректно заполнен email", e.getMessage());
-        }
-    }
-
-    private void checkPassword(UserRegistrationData registrationData) throws BusinessException {
-        try {
-            PasswordUtils.checkPassword(registrationData.getPassword(), PasswordType.USER);
-        } catch (CommonException e) {
-            log.error("Password некорректный", e);
-            throw new BusinessException("Некорректно заполнен password", e.getMessage());
-        }
-    }
-
-    private void checkNickname(UserRegistrationData registrationData) throws BusinessException {
-        try {
-            NicknameUtils.checkNickname(registrationData.getNickname());
-        } catch (CommonException e) {
-            log.error("Nickname некорректный", e);
-            throw new BusinessException("Некорректно заполнен nickname", e.getMessage());
-        }
     }
 
     private Role getDefaultRole() throws CommonException {

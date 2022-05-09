@@ -44,4 +44,13 @@ public interface UserManagerService {
      * @throws CommonException если некорректно указан username
      */
     Optional<UserData> findUserByUsername(String username) throws CommonException;
+
+    /**
+     * Изменение пароля у пользователя
+     *
+     * @param user         данные о пользователе
+     * @param passwordData данные о пароле
+     * @throws CommonException если не удалось изменить пароль
+     */
+    void changePassword(UserData user, ChangingPasswordData passwordData) throws CommonException;
 }
