@@ -41,6 +41,11 @@
 
         <active.profile>dev</active.profile>
 
+        <!-- Database -->
+        <datasource.host>localhost</datasource.host>
+        <datasource.port>5432</datasource.port>
+        <datasource.db>free_project</datasource.db>
+        <db.schema>public</db.schema>
         <db.username>postgres</db.username>
         <db.password></db.password>
     </properties>

@@ -13,10 +13,6 @@
     <artifactId>repository</artifactId>
 
     <properties>
-        <datasource.host>localhost</datasource.host>
-        <datasource.port>5432</datasource.port>
-        <datasource.db>free_project</datasource.db>
-        <db.schema>public</db.schema>
         <logging>INFO</logging>
         <verbose>true</verbose>
     </properties>
