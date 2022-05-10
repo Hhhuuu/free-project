@@ -48,6 +48,8 @@
         <db.schema>public</db.schema>
         <db.username>postgres</db.username>
         <db.password></db.password>
+
+        <application.name>free-project-${project.version}</application.name>
     </properties>
 
     <dependencyManagement>
